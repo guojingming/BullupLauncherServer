@@ -1,0 +1,6 @@
+E:\Win32CSharpWorkSpace\SyncServer\SyncServer\bin\Debug\SyncServer.exe.config
+E:\Win32CSharpWorkSpace\SyncServer\SyncServer\bin\Debug\SyncServer.exe
+E:\Win32CSharpWorkSpace\SyncServer\SyncServer\bin\Debug\SyncServer.pdb
+E:\Win32CSharpWorkSpace\SyncServer\SyncServer\obj\Debug\SyncServer.csprojResolveAssemblyReference.cache
+E:\Win32CSharpWorkSpace\SyncServer\SyncServer\obj\Debug\SyncServer.exe
+E:\Win32CSharpWorkSpace\SyncServer\SyncServer\obj\Debug\SyncServer.pdb
