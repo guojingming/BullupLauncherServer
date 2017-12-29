@@ -85,19 +85,21 @@ namespace TCPLib
 
         private void ReceiveClient(object obj){
             var mClientSocket = (Socket)obj;
-            bool flag = true;
-            while (flag){
-                try{
-                    int receiveLength = mClientSocket.Receive(result);
-                    string clientMessage = Encoding.UTF8.GetString(result, 0, receiveLength);
-                    this.SendMessage(string.Format("客户端{0}发来消息:{1}", mClientSocket.RemoteEndPoint, clientMessage));
-                }catch (Exception e){
-                    this.mClientSockets.Remove(mClientSocket);
-                    this.SendMessage(string.Format("服务器发来消息:客户端{0}从服务器断开,断开原因:{1}", mClientSocket.RemoteEndPoint, e.Message));
-                    mClientSocket.Shutdown(SocketShutdown.Both);
-                    mClientSocket.Close();
-                    break;
-                }
+
+            try{
+                int receiveLength = mClientSocket.Receive(result);
+                string clientMessage = Encoding.UTF8.GetString(result, 0, receiveLength);
+                
+                
+                
+                this.SendMessage(string.Format("客户端{0}发来消息:{1}", mClientSocket.RemoteEndPoint, clientMessage));
+                    
+                
+            }catch (Exception e){
+                this.mClientSockets.Remove(mClientSocket);    
+                this.SendMessage(string.Format("服务器发来消息:客户端{0}从服务器断开,断开原因:{1}", mClientSocket.RemoteEndPoint, e.Message));
+                mClientSocket.Shutdown(SocketShutdown.Both);
+                mClientSocket.Close();
             }
         }
 
