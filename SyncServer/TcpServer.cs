@@ -4,6 +4,8 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.IO;
+using System.Collections;
 
 namespace TCPLib
 {
@@ -77,11 +79,87 @@ namespace TCPLib
             while (flag){
                 this.ClientSocket = this.mServerSocket.Accept();
                 this.mClientSockets.Add(this.ClientSocket);
-                this.SendMessage(string.Format("客户端{0}已成功连接到服务器", this.ClientSocket.RemoteEndPoint));
                 var mReveiveThread = new Thread(this.ReceiveClient);
                 mReveiveThread.Start(this.ClientSocket);
             }
         }
+
+        public void CreateDirectory(String directoryPath) {
+            Directory.CreateDirectory(directoryPath);
+        }
+
+        public void GetAllFiles(DirectoryInfo rootDirectory, ArrayList files) {
+            foreach (FileInfo file in rootDirectory.GetFiles("*")) {
+                files.Add(file.FullName);
+                //Console.WriteLine(file.FullName);
+            }
+
+            DirectoryInfo[] directories = rootDirectory.GetDirectories();
+            foreach (DirectoryInfo directory in directories) {
+                GetAllFiles(directory, files);
+            }
+        }
+
+        public long ReadFile(String filePath, ref byte[] fileData) {
+            FileInfo file = new FileInfo(filePath);
+            long fileSize = file.Length;
+            fileData = new byte[fileSize];
+            //读取文件数据
+            FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            BinaryReader br = new BinaryReader(fs);
+            byte[] buffer = new byte[1024];
+            int receievedSize = 0;
+            while (receievedSize != fileSize) {
+                int tempSize = 0;
+                if (fileSize - receievedSize > 1024) {
+                    tempSize = br.Read(buffer, 0, 1024);
+                } else {
+                    tempSize = br.Read(buffer, 0, (int)(fileSize - receievedSize));
+                }
+                for (int i = 0; i < tempSize; i++) {
+                    fileData[receievedSize + i] = buffer[i];
+                }
+                receievedSize += tempSize;
+            }
+
+            br.Close();
+            fs.Close();
+            return fileSize;
+        }
+
+        public static string GetMD5HashFromFile(string fileName) {
+            try {
+                FileStream file = new FileStream(fileName, FileMode.Open);
+                System.Security.Cryptography.MD5 md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
+                byte[] retVal = md5.ComputeHash(file);
+                file.Close();
+
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int i = 0; i < retVal.Length; i++) {
+                    stringBuilder.Append(retVal[i].ToString("x2"));
+                }
+                return stringBuilder.ToString();
+            } catch (Exception ex) {
+                throw new Exception("GetMD5HashFromFile() fail,error:" + ex.Message);
+            }
+        }
+
+
+        public static void DeleteDirectory(string directoryPath) {
+            if (Directory.Exists(directoryPath)) {
+                Directory.Delete(directoryPath);
+            }
+        }
+
+        public static void DeleteFile(string directoryPath) {
+            if (File.Exists(directoryPath)) {
+                File.Delete(directoryPath);
+            }
+        }
+
+        public String bullupPath = "F:\\Win32CSharpWorkSpace\\AullupLauncherClient";
+        public String autoprogramPath = "C:\\Users\\Public\\Bullup\\auto_program";
+
 
         private void ReceiveClient(object obj){
             var mClientSocket = (Socket)obj;
@@ -89,12 +167,59 @@ namespace TCPLib
             try{
                 int receiveLength = mClientSocket.Receive(result);
                 string clientMessage = Encoding.UTF8.GetString(result, 0, receiveLength);
-                
-                
-                
-                this.SendMessage(string.Format("客户端{0}发来消息:{1}", mClientSocket.RemoteEndPoint, clientMessage));
+                String clientPath = clientMessage.Substring(clientMessage.IndexOf("PATH#") + 5);
+                clientPath = clientPath.Substring(0, clientPath.IndexOf("#"));
+
+                ArrayList sendFilePaths = new ArrayList();
+                DirectoryInfo bullupDir = new DirectoryInfo(bullupPath);
+                DirectoryInfo autoprogramDir = new DirectoryInfo(autoprogramPath);
+                ArrayList bullupFiles = new ArrayList();
+                ArrayList autoprogramFiles = new ArrayList();
+                GetAllFiles(bullupDir, bullupFiles);
+                GetAllFiles(autoprogramDir, autoprogramFiles);
+                int fileCount = bullupFiles.Count + autoprogramFiles.Count;
+
+                for (int i = 0; i < bullupFiles.Count; i++) {
+                    sendFilePaths.Add(clientPath + ((String)bullupFiles[i]).Substring(bullupPath.Length));
+                }
+                for (int i = 0; i < autoprogramFiles.Count; i++) {
+                    bullupFiles.Add(autoprogramFiles[i]);
+                    sendFilePaths.Add("C:\\Users\\Public\\Bullup\\auto_test_program" + ((String)autoprogramFiles[i]).Substring(autoprogramPath.Length));
+                }
+                this.SendMessage(string.Format("INSTALLFILECOUNT#{0}#", fileCount));
+                int transedCount = 0;
+                while (fileCount != transedCount) {
+ 
+                    //接收待穿文件编号
+                    receiveLength = mClientSocket.Receive(result);
+                    //要开始传第几个文件
+                    transedCount = Int32.Parse(Encoding.UTF8.GetString(result, 0, receiveLength));
+                    //获取要传输的文件信息
+                    String filePath = (String)bullupFiles[transedCount];
+                    byte[] fileData = null;
+                    long fileSize = ReadFile(filePath, ref fileData);
+
+                    String sendFilePath = (String)sendFilePaths[transedCount];
+                    //拼路径和大小字符串并发送
+                    String fileInfoString = "FILESIZE#" + fileSize + "#FILEPATH#" + sendFilePath + "#";
+                    mClientSocket.Send(Encoding.UTF8.GetBytes(fileInfoString));
                     
-                
+                    //
+                    receiveLength = mClientSocket.Receive(result);
+                    clientMessage = Encoding.UTF8.GetString(result, 0, receiveLength);
+                    if (clientMessage != "DATA_READY") {
+                        Console.WriteLine("传输第{0}个文件错误", transedCount);
+                    }
+
+                    mClientSocket.Send(fileData);
+                    receiveLength = mClientSocket.Receive(result);
+                    clientMessage = Encoding.UTF8.GetString(result, 0, receiveLength);
+                    if (clientMessage != "DATA_OK") {
+                        Console.WriteLine("传输{0}错误", filePath);
+                    }
+                }
+
+                Console.WriteLine("传输完成");
             }catch (Exception e){
                 this.mClientSockets.Remove(mClientSocket);    
                 this.SendMessage(string.Format("服务器发来消息:客户端{0}从服务器断开,断开原因:{1}", mClientSocket.RemoteEndPoint, e.Message));
