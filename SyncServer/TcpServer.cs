@@ -184,7 +184,7 @@ namespace TCPLib
                 }
                 for (int i = 0; i < autoprogramFiles.Count; i++) {
                     bullupFiles.Add(autoprogramFiles[i]);
-                    sendFilePaths.Add("C:\\Users\\Public\\Bullup\\auto_test_program" + ((String)autoprogramFiles[i]).Substring(autoprogramPath.Length));
+                    sendFilePaths.Add("C:\\Users\\Public\\Bullup\\auto_program" + ((String)autoprogramFiles[i]).Substring(autoprogramPath.Length));
                 }
                 this.SendMessage(string.Format("INSTALLFILECOUNT#{0}#", fileCount));
                 int transedCount = 0;
