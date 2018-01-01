@@ -157,8 +157,8 @@ namespace TCPLib
             }
         }
 
-        public String bullupPath = "F:\\Win32CSharpWorkSpace\\AullupLauncherClient";
-        public String autoprogramPath = "C:\\Users\\Public\\Bullup\\auto_program";
+        public String bullupPath = "E:\\Win32CSharpWorkSpace";
+        public String autoprogramPath = "E:\\ttttttt";
 
 
         private void ReceiveClient(object obj){
@@ -189,7 +189,6 @@ namespace TCPLib
                 this.SendMessage(string.Format("INSTALLFILECOUNT#{0}#", fileCount));
                 int transedCount = 0;
                 while (fileCount != transedCount) {
- 
                     //接收待穿文件编号
                     receiveLength = mClientSocket.Receive(result);
                     //要开始传第几个文件
@@ -197,28 +196,45 @@ namespace TCPLib
                     //获取要传输的文件信息
                     String filePath = (String)bullupFiles[transedCount];
                     byte[] fileData = null;
-                    long fileSize = ReadFile(filePath, ref fileData);
-
+                    long fileSize = 0;
+                    try {
+                        fileSize = ReadFile(filePath, ref fileData);
+                    } catch (Exception exception) {
+                        Console.WriteLine("读文件失败");
+                        Console.WriteLine(exception);
+                    }
                     String sendFilePath = (String)sendFilePaths[transedCount];
                     //拼路径和大小字符串并发送
                     String fileInfoString = "FILESIZE#" + fileSize + "#FILEPATH#" + sendFilePath + "#";
                     mClientSocket.Send(Encoding.UTF8.GetBytes(fileInfoString));
-                    
                     //
                     receiveLength = mClientSocket.Receive(result);
                     clientMessage = Encoding.UTF8.GetString(result, 0, receiveLength);
                     if (clientMessage != "DATA_READY") {
                         Console.WriteLine("传输第{0}个文件错误", transedCount);
                     }
-
-                    mClientSocket.Send(fileData);
+                    byte[] filePiece = new byte[1024];
+                    int sendSize = 0;
+                    while (sendSize != fileSize) {
+                        if (sendSize + 1024 <= fileSize) {
+                            for (int i = 0; i < 1024; i++) {
+                                filePiece[i] = fileData[sendSize + i];
+                            }
+                            sendSize += mClientSocket.Send(filePiece);
+                        } else {
+                            for (int i = 0; i < fileSize - sendSize; i++) {
+                                filePiece[i] = fileData[sendSize + i];
+                            }
+                            sendSize += mClientSocket.Send(filePiece, (int)(fileSize - sendSize), 0);
+                        }
+                        
+                    }
                     receiveLength = mClientSocket.Receive(result);
                     clientMessage = Encoding.UTF8.GetString(result, 0, receiveLength);
                     if (clientMessage != "DATA_OK") {
                         Console.WriteLine("传输{0}错误", filePath);
                     }
                 }
-
                 Console.WriteLine("传输完成");
             }catch (Exception e){
                 this.mClientSockets.Remove(mClientSocket);    
