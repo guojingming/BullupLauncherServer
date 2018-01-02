@@ -20,3 +20,14 @@ E:\Win32CSharpWorkSpace\SyncServer\BullupLauncherServer\BullupVersionServer\obj\
 E:\Win32CSharpWorkSpace\SyncServer\BullupLauncherServer\BullupVersionServer\obj\Debug\BullupVersionServer.Form1.resources
 E:\Win32CSharpWorkSpace\SyncServer\BullupLauncherServer\BullupVersionServer\obj\Debug\BullupVersionServer.Properties.Resources.resources
 E:\Win32CSharpWorkSpace\SyncServer\BullupLauncherServer\BullupVersionServer\obj\Debug\BullupVersionServer.csproj.GenerateResource.Cache
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\BullupVersionServer\bin\Debug\BullupVersionServer.exe.config
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\BullupVersionServer\obj\Debug\BullupVersionServer.exe
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\BullupVersionServer\obj\Debug\BullupVersionServer.pdb
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\BullupVersionServer\bin\Debug\BullupVersionServer.exe
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\BullupVersionServer\bin\Debug\BullupVersionServer.pdb
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\BullupVersionServer\bin\Debug\SyncServer.exe
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\BullupVersionServer\bin\Debug\SyncServer.pdb
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\BullupVersionServer\obj\Debug\BullupVersionServer.csprojResolveAssemblyReference.cache
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\BullupVersionServer\obj\Debug\BullupVersionServer.Form1.resources
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\BullupVersionServer\obj\Debug\BullupVersionServer.Properties.Resources.resources
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\BullupVersionServer\obj\Debug\BullupVersionServer.csproj.GenerateResource.Cache

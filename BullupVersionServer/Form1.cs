@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ namespace BullupVersionServer {
                 return;
             }
 
-            server = new TCPServer("127.0.0.1", 6001, 10);
+            server = new TCPServer(IPAddress.Any.ToString(), 6001, 10);
             server.bullupPath = bullupPath;
             server.autoprogramPath = autoprogramPath;
             server.Start();

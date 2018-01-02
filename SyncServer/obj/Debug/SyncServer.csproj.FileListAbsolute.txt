@@ -16,3 +16,9 @@ E:\Win32CSharpWorkSpace\SyncServer\BullupLauncherServer\SyncServer\bin\Debug\Syn
 E:\Win32CSharpWorkSpace\SyncServer\BullupLauncherServer\SyncServer\obj\Debug\SyncServer.csprojResolveAssemblyReference.cache
 E:\Win32CSharpWorkSpace\SyncServer\BullupLauncherServer\SyncServer\obj\Debug\SyncServer.exe
 E:\Win32CSharpWorkSpace\SyncServer\BullupLauncherServer\SyncServer\obj\Debug\SyncServer.pdb
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\SyncServer\bin\Debug\SyncServer.exe.config
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\SyncServer\bin\Debug\SyncServer.exe
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\SyncServer\bin\Debug\SyncServer.pdb
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\SyncServer\obj\Debug\SyncServer.csprojResolveAssemblyReference.cache
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\SyncServer\obj\Debug\SyncServer.exe
+C:\Users\Administrator\Desktop\BullupLauncherServer\BullupLauncherServer\SyncServer\obj\Debug\SyncServer.pdb

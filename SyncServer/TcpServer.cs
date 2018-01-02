@@ -213,11 +213,13 @@ namespace TCPLib
                     if (clientMessage != "DATA_READY") {
                         Console.WriteLine("传输第{0}个文件错误", transedCount);
                     }
-                    byte[] filePiece = new byte[8 * 1024 * 1024];
+                    byte[] filePiece = new byte[100 * 1024];
                     int sendSize = 0;
                     while (sendSize != fileSize) {
-                        if (sendSize + 8 * 1024 * 1024 <= fileSize) {
-                            for (int i = 0; i < 8 * 1024 * 1024; i++) {
+                        if (sendSize + 100 * 1024 <= fileSize)
+                        {
+                            for (int i = 0; i < 100 * 1024; i++)
+                            {
                                 filePiece[i] = fileData[sendSize + i];
                             }
                             sendSize += mClientSocket.Send(filePiece);
