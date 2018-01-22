@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,9 +56,10 @@ namespace BullupVersionServer {
                 return;
             }
 
-            server = new TCPServer("127.0.0.1", 6001, 10);
+            server = new TCPServer(IPAddress.Any.ToString(), 6001, 10);
             server.bullupPath = bullupPath;
             server.autoprogramPath = autoprogramPath;
+            server.updateFileDictionary(bullupPath, autoprogramPath); 
             server.Start();
             button3.Enabled = false;
             button3.Text = "服务已开启";
@@ -67,6 +69,16 @@ namespace BullupVersionServer {
 
         private void ThreadChild() {
             
+        }
+
+        private void button4_Click(object sender, EventArgs e) {
+            if (server == null) {
+                MessageBox.Show("请先开启服务");
+            } else {
+                if (bullupPath != "" && autoprogramPath != "") {
+                    server.updateFileDictionary(bullupPath, autoprogramPath);    
+                }
+            }
         }
     }
 }

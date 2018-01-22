@@ -13,12 +13,11 @@ namespace SyncServer
         static void Main(string[] args)
         {
             //指定IP和端口号及最大监听数目的方式
-            TCPLib.TCPServer s1 = new TCPServer(IPAddress.Any.ToString(), 6001, 10);
-            //指定端口号及最大监听数目的方式
-            //TCPLib.TCPServer s2 = new TCPServer(6001, 10);
-
-            //执行Start方法
-            s1.Start();
+            TCPServerTest server = new TCPServerTest(IPAddress.Any.ToString(), 6001, 50);
+            server.bullupPath = "D:\\Geometry";
+            server.autoprogramPath = "C:\\Users\\jlurobot\\Desktop\\论文";
+            server.updateFileDictionary(server.bullupPath, server.autoprogramPath);
+            server.Start();
         }
     }
 }
