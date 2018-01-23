@@ -18,12 +18,17 @@ namespace TCPLib
         private Socket mServerSocket;
         public Dictionary<String, byte[]> fileDataDictionary = new Dictionary<String, byte[]>();
         public Dictionary<String, long> fileSizeDictionary = new Dictionary<String, long>();
-        public String bullupPath = "D:\\KuGou";
-        public String autoprogramPath = "C:\\Users\\jlurobot\\Desktop\\郭景明组14级本科毕设课题论证书";
+        public String bullupPath = "E:\\NodeWorkspace\\BullupEsportPlatform\\BullupFrontend";
+        public String autoprogramPath = "C:\\Users\\Public\\Bullup\\BullupAutoScript";
 
         public void SendMessage(Socket socket, string msg) {
             if (msg == string.Empty) return;
-            socket.Send(Encoding.UTF8.GetBytes(msg));
+            try {
+                socket.Send(Encoding.UTF8.GetBytes(msg));
+            } catch (Exception e) {
+                Console.WriteLine("{0}已强制断开连接", socket.RemoteEndPoint.ToString());
+            }
+           
         }
 
         private void ReceiveClientNew(object obj) {
