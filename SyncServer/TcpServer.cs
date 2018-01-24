@@ -229,7 +229,7 @@ namespace TCPLib
                 Console.WriteLine("传输完成");
             } catch (Exception e) {
                 Console.WriteLine(mClientSocket.RemoteEndPoint.ToString() + "已断开");
-                SendMessage(mClientSocket, string.Format("服务器发来消息:客户端{0}从服务器断开,断开原因:{1}", mClientSocket.RemoteEndPoint, e.Message));
+                //SendMessage(mClientSocket, string.Format("服务器发来消息:客户端{0}从服务器断开,断开原因:{1}", mClientSocket.RemoteEndPoint, e.Message));
                 mClientSocket.Shutdown(SocketShutdown.Both);
                 mClientSocket.Close();
             }
