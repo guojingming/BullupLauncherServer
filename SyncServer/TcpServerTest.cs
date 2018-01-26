@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using System.Collections;
+using System.Web.Script.Serialization;
 
 namespace TCPLib
 {
@@ -39,11 +40,49 @@ namespace TCPLib
         private void ReceiveClientNew(object obj) {
             Socket mClientSocket = (Socket)obj;
             Console.WriteLine(mClientSocket.RemoteEndPoint.ToString() + "开始接收");
+            JavaScriptSerializer jsonSerialize = new JavaScriptSerializer();
+            String bullupJsonStr = "";
+            String autoprogramJsonStr = "";
             try {
                 byte[] result = new byte[300];
 RE_FILECOUNT:
-//接路径
 int receiveLength = RecieveMessage(ref mClientSocket, ref result);
+                bullupJsonStr += Encoding.UTF8.GetString(result, 0, receiveLength);
+                if (receiveLength == 300) {
+                    goto RE_FILECOUNT;
+                }
+                Dictionary<String, String> bullupDic = null;
+                try {
+                    bullupDic = jsonSerialize.Deserialize<Dictionary<String, String>>(bullupJsonStr);
+                    bullupJsonStr = "";
+                } catch (Exception e) {
+                    Console.WriteLine("Bullup file json 解码失败");
+mClientSocket.Send(Encoding.UTF8.GetBytes("BULLUP_FILE_FAIL"));
+                    bullupJsonStr = "";
+                    goto RE_FILECOUNT;
+                }
+mClientSocket.Send(Encoding.UTF8.GetBytes("BULLUP_FILE_OK"));
+RE_AUTOPROGRAM:
+receiveLength = RecieveMessage(ref mClientSocket, ref result);
+                autoprogramJsonStr += Encoding.UTF8.GetString(result, 0, receiveLength);
+                if (receiveLength == 300) {
+                    goto RE_AUTOPROGRAM;
+                }
+                Dictionary<String, String> autoprogramDic = null;
+                try {
+                    autoprogramDic = jsonSerialize.Deserialize<Dictionary<String, String>>(bullupJsonStr);
+                    autoprogramJsonStr = "";
+                } catch (Exception e) {
+                    Console.WriteLine("Autoprogram file json 解码失败");
+mClientSocket.Send(Encoding.UTF8.GetBytes("AUTOSCRIPT_FILE_FAIL"));
+                    autoprogramJsonStr = "";
+                    goto RE_FILECOUNT;
+                }
+mClientSocket.Send(Encoding.UTF8.GetBytes("AUTOSCRIPT_FILE_OK"));
+                
+
+//接路径
+receiveLength = RecieveMessage(ref mClientSocket, ref result);
                 String clientMessage = Encoding.UTF8.GetString(result, 0, receiveLength);
                 String clientPath = clientMessage.Substring(clientMessage.IndexOf("PATH$") + 5);
                 clientPath = clientPath.Substring(0, clientPath.IndexOf("$"));
