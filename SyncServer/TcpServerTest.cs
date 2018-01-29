@@ -21,7 +21,10 @@ namespace TCPLib
         public Dictionary<String, long> fileSizeDictionary = new Dictionary<String, long>();
         public String bullupPath = "E:\\Bullup\\win64";
         public String autoprogramPath = "C:\\Users\\Public\\Bullup\\BullupAutoScript";
+
+        private Dictionary<String, String> fileMd5Dictionary = new Dictionary<String, String>();
         
+
         public void SendMessage(Socket socket, string msg) {
             if (msg == string.Empty) return;
             try {
@@ -70,7 +73,7 @@ receiveLength = RecieveMessage(ref mClientSocket, ref result);
                 }
                 Dictionary<String, String> autoprogramDic = null;
                 try {
-                    autoprogramDic = jsonSerialize.Deserialize<Dictionary<String, String>>(bullupJsonStr);
+                    autoprogramDic = jsonSerialize.Deserialize<Dictionary<String, String>>(autoprogramJsonStr);
                     autoprogramJsonStr = "";
                 } catch (Exception e) {
                     Console.WriteLine("Autoprogram file json 解码失败");
@@ -93,15 +96,43 @@ receiveLength = RecieveMessage(ref mClientSocket, ref result);
                 ArrayList autoprogramFiles = new ArrayList();
                 GetAllFiles(bullupDir, bullupFiles);
                 GetAllFiles(autoprogramDir, autoprogramFiles);
-                int fileCount = fileSizeDictionary.Count;
+                
                 for (int i = 0; i < bullupFiles.Count; i++) {
-                    sendFilePaths.Add(clientPath + ((String)bullupFiles[i]).Substring(bullupPath.Length));
+                    //
+                    if (bullupDic == null || bullupDic.Count == 0) {
+                        sendFilePaths.Add(clientPath + ((String)bullupFiles[i]).Substring(bullupPath.Length));
+                    } else {
+                        String key = ((String)bullupFiles[i]).Substring(bullupPath.Length);
+                        String serverFileMd5 = fileMd5Dictionary[key];
+                        String clientFileMd5 = null;
+                        if (bullupDic.ContainsKey(key)) {
+                            clientFileMd5 = bullupDic[key];
+                        }
+                        if (serverFileMd5 != clientFileMd5) {
+                            sendFilePaths.Add(clientPath + key);
+                        }
+                    }   
                 }
                 for (int i = 0; i < autoprogramFiles.Count; i++) {
-                    bullupFiles.Add(autoprogramFiles[i]);
-                    //sendFilePaths.Add("C:\\Users\\Public\\Bullup\\auto_program" + ((String)autoprogramFiles[i]).Substring(autoprogramPath.Length));
-                    sendFilePaths.Add(clientPath + ((String)autoprogramFiles[i]).Substring(autoprogramPath.Length));
+                    //
+                    if (autoprogramDic == null || autoprogramDic.Count == 0) {
+                        bullupFiles.Add(autoprogramFiles[i]);
+                        sendFilePaths.Add("C:\\Users\\Public\\Bullup\\auto_program" + ((String)autoprogramFiles[i]).Substring(autoprogramPath.Length));
+                    } else {
+                        String key = ((String)autoprogramFiles[i]).Substring(autoprogramPath.Length);
+                        String serverFileMd5 = fileMd5Dictionary[key];
+                        String clientFileMd5 = null;
+                        if (bullupDic.ContainsKey(key)) {
+                            clientFileMd5 = autoprogramDic[key];
+                        }
+                        if (serverFileMd5 != clientFileMd5) {
+                            bullupFiles.Add(autoprogramFiles[i]);
+                            sendFilePaths.Add("C:\\Users\\Public\\Bullup\\auto_program" + ((String)autoprogramFiles[i]).Substring(autoprogramPath.Length));
+                        }
+                    }   
+                    
                 }
+                int fileCount = sendFilePaths.Count;
 //发送安装文件数量字符串
 mClientSocket.Send(Encoding.UTF8.GetBytes(String.Format("INSTALLFILECOUNT${0}$", fileCount)));
 RecieveMessage(ref mClientSocket, ref result);
@@ -173,6 +204,8 @@ RecieveMessage(ref mClientSocket, ref result);
                 mClientSocket.Close();
             }
         }
+
+
         public void updateFileDictionary(String bullupPath, String autoProgramPath) {
             fileDataDictionary.Clear();
             fileSizeDictionary.Clear();
@@ -183,8 +216,15 @@ RecieveMessage(ref mClientSocket, ref result);
             GetAllFiles(bullupDir, bullupFiles);
             GetAllFiles(autoprogramDir, autoprogramFiles);
             int fileCount = bullupFiles.Count + autoprogramFiles.Count;
+
+            fileMd5Dictionary.Clear();
             for (int i = 0; i < autoprogramFiles.Count; i++) {
-                bullupFiles.Add(autoprogramFiles[i]);
+                String filePath = autoprogramFiles[i].ToString();
+                bullupFiles.Add(filePath);
+
+                String totalPath = filePath;
+                String localPath = totalPath.Substring(totalPath.IndexOf(autoProgramPath) + autoProgramPath.Length);
+                fileMd5Dictionary.Add(localPath, GetMD5HashFromFile(totalPath));
             }
             for (int i = 0; i < bullupFiles.Count; i++) {
                 String filePath = (String)bullupFiles[i];
@@ -194,6 +234,10 @@ RecieveMessage(ref mClientSocket, ref result);
                 ReadFile(filePath, ref fileData);
                 fileDataDictionary.Add(filePath, fileData);
                 fileSizeDictionary.Add(filePath, fileSize);
+
+                String totalPath = filePath;
+                String localPath = totalPath.Substring(totalPath.IndexOf(bullupPath) + bullupPath.Length);
+                fileMd5Dictionary.Add(localPath, GetMD5HashFromFile(totalPath));
             }
         }
 
@@ -239,9 +283,11 @@ RecieveMessage(ref mClientSocket, ref result);
             return fileSize;
         }
 
-        public static string GetMD5HashFromFile(string fileName) {  
+        public static string GetMD5HashFromFile(string fileName) {
             try {
+                File.SetAttributes(fileName, FileAttributes.Normal);
                 FileStream file = new FileStream(fileName, FileMode.Open);
+
                 System.Security.Cryptography.MD5 md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
                 byte[] retVal = md5.ComputeHash(file);
                 file.Close();
