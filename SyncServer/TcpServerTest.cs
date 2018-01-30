@@ -110,7 +110,10 @@ receiveLength = RecieveMessage(ref mClientSocket, ref result);
                         }
                         if (serverFileMd5 != clientFileMd5) {
                             sendFilePaths.Add(clientPath + key);
-                        }
+                        } 
+                        //else {
+                        //    bullupFiles.RemoveAt(i);
+                        //}
                     }   
                 }
                 for (int i = 0; i < autoprogramFiles.Count; i++) {
@@ -122,7 +125,7 @@ receiveLength = RecieveMessage(ref mClientSocket, ref result);
                         String key = ((String)autoprogramFiles[i]).Substring(autoprogramPath.Length);
                         String serverFileMd5 = fileMd5Dictionary[key];
                         String clientFileMd5 = null;
-                        if (bullupDic.ContainsKey(key)) {
+                        if (autoprogramDic.ContainsKey(key)) {
                             clientFileMd5 = autoprogramDic[key];
                         }
                         if (serverFileMd5 != clientFileMd5) {
@@ -147,11 +150,21 @@ RecieveMessage(ref mClientSocket, ref result);
                 while (fileCount != transedCount) {
                     //获取要传输的文件信息
 RE_SEND:
-                    String filePath = (String)bullupFiles[transedCount];
+                    //filepath有问题 
+                    //String filePath = (String)bullupFiles[transedCount];
+                    String sendFilePath = (String)sendFilePaths[transedCount];
+                    String filePath = null;
+                    if (sendFilePath.IndexOf("C:\\Users\\Public\\Bullup\\auto_program") != 0) {
+                        filePath = bullupDir + sendFilePath.Substring(sendFilePath.IndexOf(clientPath) + clientPath.Length);
+                    } else {
+                        filePath = autoprogramDir + sendFilePath.Substring(sendFilePath.IndexOf("C:\\Users\\Public\\Bullup\\auto_program") + "C:\\Users\\Public\\Bullup\\auto_program".Length);
+                    }
+                    
+                    
                     byte[] fileData = null;
                     long fileSize = 0;
                     fileSize = ReadFileFromMemery(filePath, ref fileData);
-                    String sendFilePath = (String)sendFilePaths[transedCount];
+                   
                     //拼路径和大小字符串并发送
                     String fileSizeString = "FILESIZE$" + fileSize;
 mClientSocket.Send(Encoding.UTF8.GetBytes(fileSizeString));
@@ -218,6 +231,15 @@ RecieveMessage(ref mClientSocket, ref result);
             int fileCount = bullupFiles.Count + autoprogramFiles.Count;
 
             fileMd5Dictionary.Clear();
+            
+            for (int i = 0; i < bullupFiles.Count; i++) {
+                String filePath = (String)bullupFiles[i];
+                String totalPath = filePath;
+                String localPath = totalPath.Substring(totalPath.IndexOf(bullupPath) + bullupPath.Length);
+
+                fileMd5Dictionary.Add(localPath, GetMD5HashFromFile(totalPath));
+            }
+
             for (int i = 0; i < autoprogramFiles.Count; i++) {
                 String filePath = autoprogramFiles[i].ToString();
                 bullupFiles.Add(filePath);
@@ -234,10 +256,6 @@ RecieveMessage(ref mClientSocket, ref result);
                 ReadFile(filePath, ref fileData);
                 fileDataDictionary.Add(filePath, fileData);
                 fileSizeDictionary.Add(filePath, fileSize);
-
-                String totalPath = filePath;
-                String localPath = totalPath.Substring(totalPath.IndexOf(bullupPath) + bullupPath.Length);
-                fileMd5Dictionary.Add(localPath, GetMD5HashFromFile(totalPath));
             }
         }
 
