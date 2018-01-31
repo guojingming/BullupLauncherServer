@@ -44,7 +44,7 @@ namespace BullupVersionServer {
             textBox1.Text = bullupPath;
         }
 
-        private TCPServer server = null;
+        private TCPServerTest server = null;
 
         private void button3_Click(object sender, EventArgs e) {
             if (textBox1.Text == "") {
@@ -56,7 +56,7 @@ namespace BullupVersionServer {
                 return;
             }
 
-            server = new TCPServer(IPAddress.Any.ToString(), 6001, 10);
+            server = new TCPServerTest(IPAddress.Any.ToString(), 6001, 50);
             server.bullupPath = bullupPath;
             server.autoprogramPath = autoprogramPath;
             server.updateFileDictionary(bullupPath, autoprogramPath); 
