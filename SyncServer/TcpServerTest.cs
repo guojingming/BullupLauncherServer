@@ -46,20 +46,39 @@ namespace TCPLib
             JavaScriptSerializer jsonSerialize = new JavaScriptSerializer();
             String bullupJsonStr = "";
             String autoprogramJsonStr = "";
+            int jsonStrSize = 0;
+            int curJsonStrSize = 0;
+
             try {
                 byte[] result = new byte[300];
 RE_FILECOUNT:
 int receiveLength = RecieveMessage(ref mClientSocket, ref result);
-                bullupJsonStr += Encoding.UTF8.GetString(result, 0, receiveLength);
-                if (receiveLength == 300) {
+                try{
+                    String bullupFileLengthStr = Encoding.UTF8.GetString(result, 0, receiveLength);
+                    jsonStrSize = Int32.Parse(bullupFileLengthStr);
+mClientSocket.Send(Encoding.UTF8.GetBytes("BULLUP_FILE_LENGTH_OK"));
+                }
+                catch (Exception e) {
+mClientSocket.Send(Encoding.UTF8.GetBytes("BULLUP_FILE_LENGTH_FAIL"));
                     goto RE_FILECOUNT;
                 }
+CONTINUE_BULLUP_JSON:
+receiveLength = RecieveMessage(ref mClientSocket, ref result);
+curJsonStrSize += receiveLength;
+                bullupJsonStr += Encoding.UTF8.GetString(result, 0, receiveLength);
+                if (curJsonStrSize < jsonStrSize)
+                {
+                    //curJsonStrSize = 0;
+                    goto CONTINUE_BULLUP_JSON;
+                }
+                curJsonStrSize = 0;
                 Dictionary<String, String> bullupDic = null;
                 try {
                     bullupDic = jsonSerialize.Deserialize<Dictionary<String, String>>(bullupJsonStr);
                     bullupJsonStr = "";
                 } catch (Exception e) {
-                    Console.WriteLine("Bullup file json 解码失败");
+                    Console.WriteLine("Bullup json str:" + bullupJsonStr);
+                    Console.WriteLine("Bullup file json decode failed");
 mClientSocket.Send(Encoding.UTF8.GetBytes("BULLUP_FILE_FAIL"));
                     bullupJsonStr = "";
                     goto RE_FILECOUNT;
@@ -67,19 +86,37 @@ mClientSocket.Send(Encoding.UTF8.GetBytes("BULLUP_FILE_FAIL"));
 mClientSocket.Send(Encoding.UTF8.GetBytes("BULLUP_FILE_OK"));
 RE_AUTOPROGRAM:
 receiveLength = RecieveMessage(ref mClientSocket, ref result);
-                autoprogramJsonStr += Encoding.UTF8.GetString(result, 0, receiveLength);
-                if (receiveLength == 300) {
+                try
+                {
+                    String autoFileLengthStr = Encoding.UTF8.GetString(result, 0, receiveLength);
+                    jsonStrSize = Int32.Parse(autoFileLengthStr);
+                    mClientSocket.Send(Encoding.UTF8.GetBytes("AUTOSCRIPT_FILE_LENGTH_OK"));
+                }
+                catch (Exception e)
+                {
+                    mClientSocket.Send(Encoding.UTF8.GetBytes("AUTOSCRIPT_FILE_LENGTH_FAIL"));
                     goto RE_AUTOPROGRAM;
                 }
+CONTINUE_AUTOPROGRAM_JSON:
+receiveLength = RecieveMessage(ref mClientSocket, ref result);
+                curJsonStrSize += receiveLength;
+                autoprogramJsonStr += Encoding.UTF8.GetString(result, 0, receiveLength);
+                if (curJsonStrSize < jsonStrSize)
+                {
+                    //
+                    goto CONTINUE_AUTOPROGRAM_JSON;
+                }
+
                 Dictionary<String, String> autoprogramDic = null;
                 try {
                     autoprogramDic = jsonSerialize.Deserialize<Dictionary<String, String>>(autoprogramJsonStr);
                     autoprogramJsonStr = "";
                 } catch (Exception e) {
-                    Console.WriteLine("Autoprogram file json 解码失败");
+                    Console.WriteLine("Auto json str:" + autoprogramJsonStr);
+                    Console.WriteLine("Autoprogram file json decode failed");
 mClientSocket.Send(Encoding.UTF8.GetBytes("AUTOSCRIPT_FILE_FAIL"));
                     autoprogramJsonStr = "";
-                    goto RE_FILECOUNT;
+                    goto RE_AUTOPROGRAM;
                 }
 mClientSocket.Send(Encoding.UTF8.GetBytes("AUTOSCRIPT_FILE_OK"));
                 
@@ -184,7 +221,7 @@ RecieveMessage(ref mClientSocket, ref result);
                         //Console.WriteLine("重发filePath");
                         //goto RE_SEND;
                     }
-                    int blockSize = 4 * 1024 * 1024;
+                    int blockSize = 200 * 1024;
                     byte[] filePiece = new byte[blockSize];
                     int sendSize = 0;
                     while (sendSize != fileSize) {
