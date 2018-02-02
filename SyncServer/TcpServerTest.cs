@@ -46,32 +46,15 @@ namespace TCPLib
             JavaScriptSerializer jsonSerialize = new JavaScriptSerializer();
             String bullupJsonStr = "";
             String autoprogramJsonStr = "";
-            int jsonStrSize = 0;
-            int curJsonStrSize = 0;
-
+            byte[] jsonResult = new byte[2048 * 1024];
+            int receiveLength = 0;
             try {
                 byte[] result = new byte[300];
 RE_FILECOUNT:
-int receiveLength = RecieveMessage(ref mClientSocket, ref result);
-                try{
-                    String bullupFileLengthStr = Encoding.UTF8.GetString(result, 0, receiveLength);
-                    jsonStrSize = Int32.Parse(bullupFileLengthStr);
-mClientSocket.Send(Encoding.UTF8.GetBytes("BULLUP_FILE_LENGTH_OK"));
-                }
-                catch (Exception e) {
-mClientSocket.Send(Encoding.UTF8.GetBytes("BULLUP_FILE_LENGTH_FAIL"));
-                    goto RE_FILECOUNT;
-                }
-CONTINUE_BULLUP_JSON:
-receiveLength = RecieveMessage(ref mClientSocket, ref result);
-curJsonStrSize += receiveLength;
-                bullupJsonStr += Encoding.UTF8.GetString(result, 0, receiveLength);
-                if (curJsonStrSize < jsonStrSize)
-                {
-                    //curJsonStrSize = 0;
-                    goto CONTINUE_BULLUP_JSON;
-                }
-                curJsonStrSize = 0;
+receiveLength = RecieveMessage(ref mClientSocket, ref jsonResult);
+                bullupJsonStr = Encoding.UTF8.GetString(jsonResult, 0, receiveLength);
+                bullupJsonStr = bullupJsonStr.Substring(bullupJsonStr.IndexOf("BULLUPFILEJSON$") + "BULLUPFILEJSON$".Length);
+                bullupJsonStr = bullupJsonStr.Substring(0, bullupJsonStr.LastIndexOf("$"));
                 Dictionary<String, String> bullupDic = null;
                 try {
                     bullupDic = jsonSerialize.Deserialize<Dictionary<String, String>>(bullupJsonStr);
@@ -85,27 +68,10 @@ mClientSocket.Send(Encoding.UTF8.GetBytes("BULLUP_FILE_FAIL"));
                 }
 mClientSocket.Send(Encoding.UTF8.GetBytes("BULLUP_FILE_OK"));
 RE_AUTOPROGRAM:
-receiveLength = RecieveMessage(ref mClientSocket, ref result);
-                try
-                {
-                    String autoFileLengthStr = Encoding.UTF8.GetString(result, 0, receiveLength);
-                    jsonStrSize = Int32.Parse(autoFileLengthStr);
-                    mClientSocket.Send(Encoding.UTF8.GetBytes("AUTOSCRIPT_FILE_LENGTH_OK"));
-                }
-                catch (Exception e)
-                {
-                    mClientSocket.Send(Encoding.UTF8.GetBytes("AUTOSCRIPT_FILE_LENGTH_FAIL"));
-                    goto RE_AUTOPROGRAM;
-                }
-CONTINUE_AUTOPROGRAM_JSON:
-receiveLength = RecieveMessage(ref mClientSocket, ref result);
-                curJsonStrSize += receiveLength;
-                autoprogramJsonStr += Encoding.UTF8.GetString(result, 0, receiveLength);
-                if (curJsonStrSize < jsonStrSize)
-                {
-                    //
-                    goto CONTINUE_AUTOPROGRAM_JSON;
-                }
+receiveLength = RecieveMessage(ref mClientSocket, ref jsonResult);
+                autoprogramJsonStr = Encoding.UTF8.GetString(jsonResult, 0, receiveLength);
+                autoprogramJsonStr = autoprogramJsonStr.Substring(autoprogramJsonStr.IndexOf("AUTOFILEJSON$") + "AUTOFILEJSON$".Length);
+                autoprogramJsonStr = autoprogramJsonStr.Substring(0, autoprogramJsonStr.LastIndexOf("$"));
 
                 Dictionary<String, String> autoprogramDic = null;
                 try {

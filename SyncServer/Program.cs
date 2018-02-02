@@ -14,8 +14,8 @@ namespace SyncServer
         {
             //指定IP和端口号及最大监听数目的方式
             TCPServerTest server = new TCPServerTest(IPAddress.Any.ToString(), 6001, 50);
-            server.bullupPath = "C:\\Users\\Administrator\\Desktop\\Bullup\\win64";
-            server.autoprogramPath = "C:\\Users\\Administrator\\Desktop\\auto_program";
+            server.bullupPath = "C:\\斗牛电竞1.31\\bullup-front";
+            server.autoprogramPath = "C:\\斗牛电竞1.31\\auto_program";
             server.updateFileDictionary(server.bullupPath, server.autoprogramPath);
             server.Start();
         }
